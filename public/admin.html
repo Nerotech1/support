@@ -1,0 +1,440 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>Admin —  Help Center</title>
+<style>
+  :root {
+    --brand: #5B2EFF;
+    --brand-dark: #4720CC;
+    --bg: #F7F6FF;
+    --ink: #0D0B33;
+    --muted: #6B6A82;
+    --line: #E4E2F0;
+    --radius: 12px;
+  }
+  * { box-sizing: border-box; }
+  html, body { margin: 0; padding: 0; }
+  body {
+    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+    background: var(--bg); color: var(--ink); line-height: 1.5;
+  }
+  #login {
+    position: fixed; inset: 0; background: var(--bg);
+    display: flex; align-items: center; justify-content: center;
+    z-index: 100; flex-direction: column;
+  }
+  #login .box {
+    background:#fff; padding: 40px; border-radius: 16px;
+    box-shadow: 0 10px 40px rgba(91,46,255,.12); width: 340px;
+    text-align: center;
+  }
+  #login .mark {
+    width: 52px; height: 52px; border-radius: 14px;
+    background: var(--brand); color: #fff;
+    display:grid; place-items:center; font-weight:800; font-size:22px;
+    margin: 0 auto 18px;
+  }
+  #login h2 { margin: 0 0 6px; font-size: 20px; }
+  #login p { margin: 0 0 22px; color: var(--muted); font-size: 13.5px; }
+  #login input {
+    width:100%; padding: 11px 14px; border: 1px solid var(--line);
+    border-radius: 10px; font-size:14px; margin-bottom: 12px;
+  }
+  #login input:focus { outline:none; border-color: var(--brand); box-shadow: 0 0 0 3px rgba(91,46,255,.12); }
+  #login button {
+    width: 100%; padding: 11px; background: var(--brand); color:#fff;
+    border:none; border-radius:10px; font-size:14px; font-weight:600; cursor:pointer;
+  }
+  #login .err { color: #B42318; font-size: 13px; margin-top: 10px; display: none; }
+  #login .err.show { display: block; }
+
+  header {
+    background: var(--brand); color:#fff;
+    padding: 14px 28px;
+    display: flex; justify-content: space-between; align-items: center;
+    position: sticky; top:0; z-index: 10;
+  }
+  header .brand { display:flex; align-items:center; gap:10px; font-weight:700; }
+  header .brand .mark {
+    width:24px; height:24px; border-radius:7px; background:#fff; color: var(--brand);
+    display:grid; place-items:center; font-weight:800; font-size: 13px;
+  }
+  header .tabs button {
+    background: none; border: none; color: #fff; padding: 8px 16px;
+    font-size: 14px; cursor:pointer; border-radius: 8px;
+    opacity: .7; margin-left: 4px;
+  }
+  header .tabs button.active { background: rgba(255,255,255,.2); opacity: 1; }
+  header .logout { background: none; border: 1px solid rgba(255,255,255,.4); color:#fff;
+    padding: 6px 12px; font-size: 12.5px; border-radius: 8px; cursor:pointer; margin-left: 12px; }
+
+  .wrap { max-width: 1240px; margin: 24px auto; padding: 0 20px; }
+  .card {
+    background:#fff; border-radius: var(--radius);
+    box-shadow: 0 2px 12px rgba(13,11,51,.05); padding: 22px;
+  }
+
+  .controls { display: flex; gap: 10px; margin-bottom: 16px; flex-wrap: wrap; align-items: center; }
+  .controls input[type=search], .controls select {
+    padding: 9px 12px; border: 1px solid var(--line); border-radius: 9px;
+    font-size: 13.5px; font-family: inherit;
+  }
+  .controls input[type=search] { flex: 1; min-width: 200px; }
+  .controls .btn {
+    padding: 9px 14px; border-radius: 9px; font-size: 13.5px;
+    border: 1px solid var(--line); background: #fff; cursor: pointer;
+  }
+  .controls .btn.primary { background: var(--brand); color:#fff; border-color: var(--brand); font-weight:600; }
+
+  table { width: 100%; border-collapse: collapse; font-size: 13.5px; }
+  th, td { text-align: left; padding: 11px 12px; border-bottom: 1px solid var(--line); vertical-align: top; }
+  th { background: #FAFAFE; font-weight: 600; color: var(--muted); font-size: 12px; text-transform: uppercase; letter-spacing: .5px; }
+  tbody tr:hover { background: #FAFAFE; cursor: pointer; }
+  .status {
+    display: inline-block; font-size: 11px; font-weight: 700;
+    padding: 3px 8px; border-radius: 999px; text-transform: uppercase; letter-spacing: .4px;
+  }
+  .status.open { background: #FFF1D6; color: #7A5A00; }
+  .status.resolved { background: #DCF7E4; color: #0F5C2C; }
+  .status.spam { background: #F5E0E0; color: #8A1F1F; }
+
+  .empty { text-align: center; padding: 60px 20px; color: var(--muted); }
+  .empty .icon { font-size: 40px; margin-bottom: 10px; opacity: .3; }
+
+  #detail { display: none; }
+  #detail.show { display: block; }
+  #detail .back { background: #EFEBFF; border:none; padding: 7px 14px; border-radius: 8px; cursor: pointer; font-size: 13px; color: var(--brand); font-weight:600; margin-bottom: 16px; }
+  #detail h2 { margin: 6px 0 16px; font-size: 20px; }
+  #detail .meta { display: grid; grid-template-columns: 110px 1fr; gap: 10px 16px; font-size: 13.5px; margin-bottom: 20px; }
+  #detail .meta b { color: var(--muted); font-weight: 500; }
+  #detail .body { background: #FAFAFE; padding: 16px; border-radius: 10px; white-space: pre-wrap; font-size: 14px; line-height: 1.6; margin-bottom: 18px; }
+  #detail .actions { display: flex; gap: 10px; flex-wrap: wrap; }
+  #detail .actions a, #detail .actions button {
+    padding: 9px 16px; border-radius: 9px; font-size: 13.5px; font-weight: 600;
+    border: none; cursor: pointer; text-decoration: none;
+  }
+  .btn-mail { background: var(--brand); color: #fff; }
+  .btn-resolve { background: #DCF7E4; color: #0F5C2C; }
+  .btn-spam { background: #F5E0E0; color: #8A1F1F; }
+  .btn-delete { background: #F5E0E0; color: #8A1F1F; }
+
+  #chatView { display: none; }
+  #chatView.show { display: flex; height: calc(100vh - 130px); gap: 0; padding: 0; overflow: hidden; }
+  #sidebar { width: 300px; border-right: 1px solid var(--line); overflow-y: auto; background: #fff; }
+  .conv { padding: 14px 18px; border-bottom: 1px solid #F0F0F7; cursor: pointer; position: relative; }
+  .conv:hover { background: #FAFAFE; }
+  .conv.active { background: #EFEBFF; }
+  .conv .name { font-weight: 600; font-size: 14px; display:flex; justify-content:space-between; align-items:center; }
+  .conv .unread-dot { width:8px; height:8px; background:#FF3B5C; border-radius:50%; display:none; }
+  .conv.unread .unread-dot { display:block; }
+  .conv .preview { font-size: 12.5px; color: var(--muted); white-space:nowrap; overflow:hidden; text-overflow: ellipsis; margin-top: 3px; }
+  .conv .time { font-size: 11px; color: var(--muted); margin-top: 2px; }
+
+  #chatMain { flex: 1; display: flex; flex-direction: column; background: var(--bg); }
+  #chatMain .head { padding: 14px 20px; border-bottom: 1px solid var(--line); font-weight: 600; background:#fff; }
+  #chatMain .messages { flex: 1; overflow-y: auto; padding: 20px; }
+  .msg { margin: 8px 0; padding: 10px 14px; border-radius: 14px; max-width: 70%; word-wrap: break-word; font-size: 14px; line-height: 1.45; }
+  .msg.me { background: var(--brand); color: #fff; margin-left: auto; border-bottom-right-radius: 4px; }
+  .msg.them { background: #fff; box-shadow: 0 1px 3px rgba(0,0,0,.05); border-bottom-left-radius: 4px; }
+  .meta { font-size: 11px; opacity: .6; margin-top: 4px; }
+  #chatMain .composer { display: flex; gap: 10px; padding: 14px; background: #fff; border-top: 1px solid var(--line); }
+  #chatMain .composer input { flex: 1; padding: 11px 14px; border: 1px solid var(--line); border-radius: 10px; font-size: 14px; }
+  #chatMain .composer input:focus { outline:none; border-color: var(--brand); }
+  #chatMain .composer button { background: var(--brand); color:#fff; border:none; padding: 11px 20px; border-radius: 10px; cursor:pointer; font-weight:600; }
+  .typing-line { font-size: 12px; color: var(--muted); font-style: italic; padding: 0 0 6px; display:none; }
+  .typing-line.show { display: block; }
+
+  @media (max-width: 760px) {
+    header { padding: 12px 16px; }
+    .wrap { padding: 0 12px; margin: 16px auto; }
+    .card { padding: 16px; }
+    #chatView.show { flex-direction: column; height: auto; }
+    #sidebar { width: 100%; max-height: 220px; }
+    #chatMain { min-height: 400px; }
+  }
+</style>
+</head>
+<body>
+
+<div id="login">
+  <div class="box">
+    <div class="mark">D</div>
+    <h2>Admin sign in</h2>
+    <p>Enter your admin password to continue.</p>
+    <input type="password" id="pwd" placeholder="Password" />
+    <button onclick="login()">Sign in</button>
+    <div class="err" id="loginErr">Wrong password</div>
+  </div>
+</div>
+
+<header>
+  <div class="brand"><div class="mark">D</div> Admin</div>
+  <div class="tabs">
+    <button id="tabReq" class="active" onclick="showTab('requests')">Requests</button>
+    <button id="tabChat" onclick="showTab('chats')">Live chats</button>
+    <button class="logout" onclick="logout()">Sign out</button>
+  </div>
+</header>
+
+<div class="wrap">
+  <div id="requestsView" class="card">
+    <div class="controls">
+      <input type="search" id="searchInput" placeholder="Search subject, email, name…" oninput="debouncedLoad()" />
+      <select id="statusFilter" onchange="loadRequests()">
+        <option value="all">All statuses</option>
+        <option value="open">Open</option>
+        <option value="resolved">Resolved</option>
+        <option value="spam">Spam</option>
+      </select>
+      <button class="btn" onclick="exportCsv()">Export CSV</button>
+    </div>
+
+    <table id="reqTable">
+      <thead>
+        <tr><th>Ticket</th><th>Name</th><th>Email</th><th>Category</th><th>Subject</th><th>Status</th><th>Date</th></tr>
+      </thead>
+      <tbody></tbody>
+    </table>
+
+    <div id="emptyRequests" class="empty" style="display:none">
+      <div class="icon">📭</div>
+      <div>No requests yet.</div>
+    </div>
+
+    <div id="detail">
+      <button class="back" onclick="closeDetail()">← Back to list</button>
+      <h2 id="dSubject"></h2>
+      <div class="meta">
+        <b>Ticket</b><span id="dTicket"></span>
+        <b>Name</b><span id="dName"></span>
+        <b>Email</b><span id="dEmail"></span>
+        <b>Category</b><span id="dCategory"></span>
+        <b>Date</b><span id="dDate"></span>
+        <b>Status</b><span id="dStatus"></span>
+      </div>
+      <div class="body" id="dBody"></div>
+      <div class="actions" id="dActions"></div>
+    </div>
+  </div>
+
+  <div id="chatView" class="card">
+    <div id="sidebar"></div>
+    <div id="chatMain">
+      <div class="head" id="chatHead">Select a conversation</div>
+      <div class="messages" id="chatMsgs"></div>
+      <div class="typing-line" id="typingLine">User is typing…</div>
+      <form class="composer" id="composer" style="display:none" onsubmit="sendReply(event)">
+        <input id="replyInput" placeholder="Type your reply…" autocomplete="off" />
+        <button type="submit">Send</button>
+      </form>
+    </div>
+  </div>
+</div>
+
+<script src="/socket.io/socket.io.js"></script>
+<script>
+  const $ = id => document.getElementById(id);
+  const escapeHtml = s => String(s).replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+  function timeAgo(ts) {
+    const d = (Date.now() - ts) / 1000;
+    if (d < 60) return 'just now';
+    if (d < 3600) return Math.floor(d/60) + ' min ago';
+    if (d < 86400) return Math.floor(d/3600) + ' hr ago';
+    return new Date(ts).toLocaleDateString();
+  }
+
+  let socket, activeConv = null;
+
+  async function login() {
+    const password = $('pwd').value;
+    const res = await fetch('/api/admin/login', {
+      method: 'POST', headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ password })
+    });
+    if (!res.ok) { $('loginErr').classList.add('show'); return; }
+    $('login').style.display = 'none';
+    boot();
+  }
+  async function logout() {
+    await fetch('/api/admin/logout', { method: 'POST' });
+    location.reload();
+  }
+  (async function checkSession() {
+    const r = await fetch('/api/admin/me');
+    const d = await r.json();
+    if (d.isAdmin) { $('login').style.display = 'none'; boot(); }
+  })();
+  $('pwd').addEventListener('keydown', e => { if (e.key === 'Enter') login(); });
+
+  function boot() {
+    loadRequests();
+    socket = io();
+    socket.emit('join', { role: 'admin' });
+    socket.on('message', m => {
+      if (activeConv && m.conversationId === activeConv.id) renderMsg(m);
+      loadConversations();
+    });
+    socket.on('typing', ({ role }) => {
+      if (role === 'user') {
+        $('typingLine').classList.add('show');
+        clearTimeout(window._t);
+        window._t = setTimeout(() => $('typingLine').classList.remove('show'), 2500);
+      }
+    });
+    socket.on('admin:new-request', () => {
+      loadRequests();
+      notify('New request received');
+    });
+    loadConversations();
+  }
+
+  function notify(msg) {
+    if (!('Notification' in window)) return;
+    if (Notification.permission === 'granted') new Notification(msg);
+    else if (Notification.permission !== 'denied') Notification.requestPermission();
+  }
+
+  function showTab(tab) {
+    $('tabReq').classList.toggle('active', tab === 'requests');
+    $('tabChat').classList.toggle('active', tab === 'chats');
+    $('requestsView').style.display = tab === 'requests' ? 'block' : 'none';
+    $('chatView').classList.toggle('show', tab === 'chats');
+  }
+
+  let debounceTimer;
+  function debouncedLoad() {
+    clearTimeout(debounceTimer);
+    debounceTimer = setTimeout(loadRequests, 250);
+  }
+
+  async function loadRequests() {
+    const q = $('searchInput').value;
+    const status = $('statusFilter').value;
+    const url = `/api/admin/requests?q=${encodeURIComponent(q)}&status=${status}`;
+    const rows = await (await fetch(url)).json();
+    const tbody = document.querySelector('#reqTable tbody');
+    tbody.innerHTML = '';
+    $('emptyRequests').style.display = rows.length ? 'none' : 'block';
+    $('reqTable').style.display = rows.length ? 'table' : 'none';
+
+    rows.forEach(r => {
+      const tr = document.createElement('tr');
+      tr.innerHTML = `
+        <td>DEMO-${String(r.id).padStart(5,'0')}</td>
+        <td>${escapeHtml(r.name || '—')}</td>
+        <td>${escapeHtml(r.email)}</td>
+        <td>${escapeHtml(r.category || '—')}</td>
+        <td>${escapeHtml(r.subject)}</td>
+        <td><span class="status ${r.status}">${r.status}</span></td>
+        <td>${timeAgo(r.created_at)}</td>`;
+      tr.onclick = () => openDetail(r);
+      tbody.appendChild(tr);
+    });
+  }
+
+  function openDetail(r) {
+    $('reqTable').style.display = 'none';
+    $('detail').classList.add('show');
+    $('dTicket').textContent = 'DEMO-' + String(r.id).padStart(5,'0');
+    $('dSubject').textContent = r.subject;
+    $('dName').textContent = r.name || '—';
+    $('dEmail').textContent = r.email;
+    $('dCategory').textContent = r.category || '—';
+    $('dDate').textContent = new Date(r.created_at).toLocaleString();
+    $('dStatus').innerHTML = `<span class="status ${r.status}">${r.status}</span>`;
+    $('dBody').textContent = r.description;
+
+    const actions = $('dActions');
+    actions.innerHTML = '';
+    const mail = document.createElement('a');
+    mail.href = `mailto:${r.email}?subject=Re: ${encodeURIComponent(r.subject)}`;
+    mail.className = 'btn-mail';
+    mail.textContent = 'Reply via email';
+    actions.appendChild(mail);
+
+    if (r.status !== 'resolved') {
+      const b = document.createElement('button');
+      b.className = 'btn-resolve'; b.textContent = 'Mark resolved';
+      b.onclick = () => setStatus(r.id, 'resolved');
+      actions.appendChild(b);
+    }
+    if (r.status !== 'spam') {
+      const b = document.createElement('button');
+      b.className = 'btn-spam'; b.textContent = 'Mark spam';
+      b.onclick = () => setStatus(r.id, 'spam');
+      actions.appendChild(b);
+    }
+    const del = document.createElement('button');
+    del.className = 'btn-delete'; del.textContent = 'Delete';
+    del.onclick = () => { if (confirm('Delete this request permanently?')) delReq(r.id); };
+    actions.appendChild(del);
+  }
+
+  async function setStatus(id, status) {
+    await fetch(`/api/admin/requests/${id}/status`, {
+      method: 'POST', headers: {'Content-Type':'application/json'},
+      body: JSON.stringify({ status })
+    });
+    closeDetail(); loadRequests();
+  }
+  async function delReq(id) {
+    await fetch(`/api/admin/requests/${id}`, { method: 'DELETE' });
+    closeDetail(); loadRequests();
+  }
+  function closeDetail() {
+    $('detail').classList.remove('show');
+    $('reqTable').style.display = 'table';
+  }
+  function exportCsv() { window.location.href = '/api/admin/requests/export.csv'; }
+
+  async function loadConversations() {
+    const rows = await (await fetch('/api/admin/conversations')).json();
+    const sb = $('sidebar');
+    sb.innerHTML = '';
+    rows.forEach(c => {
+      const d = document.createElement('div');
+      d.className = 'conv' + (activeConv && activeConv.id === c.id ? ' active' : '');
+      d.innerHTML = `
+        <div class="name">${escapeHtml(c.name)} <span class="unread-dot"></span></div>
+        <div class="preview">${escapeHtml(c.last_message || '(no messages yet)')}</div>
+        <div class="time">${c.last_at ? timeAgo(c.last_at) : ''}</div>`;
+      d.onclick = () => openConv(c);
+      sb.appendChild(d);
+    });
+  }
+
+  async function openConv(c) {
+    activeConv = c;
+    $('chatHead').textContent = 'Chat with ' + c.name;
+    $('composer').style.display = 'flex';
+    $('chatMsgs').innerHTML = '';
+    const msgs = await (await fetch('/api/chat/messages/' + c.id)).json();
+    msgs.forEach(renderMsg);
+    socket.emit('join', { conversationId: c.id, role: 'admin' });
+    loadConversations();
+  }
+
+  function sendReply(e) {
+    e.preventDefault();
+    const input = $('replyInput');
+    const body = input.value.trim();
+    if (!body || !activeConv) return;
+    socket.emit('message', { conversationId: activeConv.id, sender: 'admin', body });
+    input.value = '';
+  }
+
+  function renderMsg(m) {
+    const box = $('chatMsgs');
+    const d = document.createElement('div');
+    const mine = m.sender === 'admin';
+    d.className = 'msg ' + (mine ? 'me' : 'them');
+    d.innerHTML = escapeHtml(m.body) +
+      '<div class="meta">' + (mine ? 'You' : 'User') + ' • ' + timeAgo(m.created_at) + '</div>';
+    box.appendChild(d);
+    box.scrollTop = box.scrollHeight;
+  }
+</script>
+</body>
+</html>
