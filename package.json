@@ -1,6 +1,6 @@
 {
   "name": "Safepal-support",
-"version": "1.0.0",
+  "version": "1.0.0",
   "main": "server.js",
   "engines": {
     "node": "22.x"
@@ -9,7 +9,7 @@
     "start": "node server.js"
   },
   "dependencies": {
-    "better-sqlite3": "^11.0.0",
+    "better-sqlite3": "^12.11.1",
     "dotenv": "^16.x",
     "express": "^4.19.2",
     "express-session": "^1.18.0",
