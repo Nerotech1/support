@@ -19,6 +19,7 @@ const IS_PROD = NODE_ENV === 'production';
 
 // ---------- APP ----------
 const app = express();
+app.set('trust proxy', 1);   // ← REQUIRED on Render/Heroku for secure session cookies
 const server = http.createServer(app);
 const io = new Server(server, {
   cors: IS_PROD ? { origin: false } : { origin: true }
